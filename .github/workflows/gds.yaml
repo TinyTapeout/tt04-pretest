@@ -1,10 +1,9 @@
 name: gds
-# either manually started, or on a schedule
-on: [push, workflow_dispatch]
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+
+on:
+  push:
+  workflow_dispatch:
+
 jobs:
   gds:
     runs-on: ubuntu-latest
@@ -20,5 +19,8 @@ jobs:
   viewer:
     needs: gds
     runs-on: ubuntu-latest
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
     steps:
       - uses: TinyTapeout/tt-gds-action/viewer@main
