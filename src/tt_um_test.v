@@ -20,7 +20,7 @@ module tt_um_test (
 );
 
 	reg rst_n_i;
-	reg [7:0] cnt;
+	reg [7:0] cnt[256];
 
 	always @(posedge clk or negedge rst_n)
 		if (~rst_n)
@@ -30,12 +30,12 @@ module tt_um_test (
 
 	always @(posedge clk or negedge rst_n_i)
 		if (~rst_n_i)
-			cnt <= 0;
+			cnt[0] <= 0;
 		else
-			cnt <= cnt + 1;
+			cnt[ui_in] <= cnt + 1;
 	
-	assign uo_out  = ui_in[0] ? cnt : uio_in;
-	assign uio_out = ui_in[0] ? cnt : 8'h00;
+	assign uo_out  = ui_in[0] ? cnt[uio_in] : uio_in;
+	assign uio_out = ui_in[0] ? cnt[ui_in] : 8'h00;
 	assign uio_oe  = ui_in[0] ? 8'hff : 8'h00;
 
 endmodule // tt_um_test
