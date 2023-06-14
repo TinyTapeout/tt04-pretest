@@ -7,88 +7,15 @@ permissions:
   id-token: write
 jobs:
   gds:
-    env:
-        OPENLANE_TAG:           2023.02.14
-        OPENLANE_IMAGE_NAME:    efabless/openlane:4cd0986b3ae550cdf7a6d0fba4e0657012f635d8-amd64
-        OPENLANE_ROOT:          /home/runner/openlane
-        PDK_ROOT:               /home/runner/pdk
-        PDK:                    sky130A
-
-    # ubuntu
     runs-on: ubuntu-latest
     steps:
-    # need the repo checked out
     - name: checkout repo
       uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: checkout tt tools repo
-      uses: actions/checkout@v3
-      with:
-        repository: tinytapeout/tt-support-tools
-        path: tt
-        ref: tt03p5
-
-    # need python
-    - name: setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - run: pip install -r tt/requirements.txt
-
-    # fetch the Verilog from Wokwi API
-    - name: fetch Verilog and build config
-      run: ./tt/tt_tool.py --create-user-config
-
-    # build OpenLane
-    - name: openlane repo
-      run: |
-        git clone --depth=1 --branch $OPENLANE_TAG https://github.com/The-OpenROAD-Project/OpenLane.git $OPENLANE_ROOT
-        cd $OPENLANE_ROOT
-        make
-
-    # run OpenLane to build the GDS
-    - name: make GDS
-      run: ./tt/tt_tool.py --harden
-
-    # for debugging, show all the files
-    - name: show files
-      run: find runs/wokwi/
-
-    # yosys warnings
-    - name: yosys warnings
-      run: ./tt/tt_tool.py --print-warnings >> $GITHUB_STEP_SUMMARY
-
-    # print some routing stats
-    - name: add summary
-      run: ./tt/tt_tool.py --print-stats >> $GITHUB_STEP_SUMMARY
-
-    # print some cell stats
-    - name: cell usage summary
-      run: ./tt/tt_tool.py --print-cell-category >> $GITHUB_STEP_SUMMARY
-
-    - name: populate src cache
-      uses: actions/cache@v3
-      with:
-        path: src
-        key: ${{ runner.os }}-src-${{ github.run_id }}
-
-    - name: populate runs cache
-      uses: actions/cache@v3
-      with:
-        path: runs
-        key: ${{ runner.os }}-runs-${{ github.run_id }}
-
-    # create png
-    - name: png
-      run: ./tt/tt_tool.py --create-png
-
-    - name: populate png cache
-      uses: actions/cache@v3
-      with:
-        path: 'gds_render.png'
-        key: ${{ runner.os }}-png-${{ github.run_id }}
+    - name: Build GDS
+      uses: TinyTapeout/tt-gds-action@main
 
 ##############################################################
 # Generate files for the 3D viewer
